@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/tulakan/QandA-System-Gateway#readme",
   "dependencies": {
+    "mqtt": "^2.8.2",
     "noble": "^1.8.1"
   }
 }
