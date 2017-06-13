@@ -1,0 +1,19 @@
+{
+  "name": "gateway-ble",
+  "version": "1.0.0",
+  "description": "gatewat of Q and A System with BLe Project",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tulakan/QandA-System-Gateway.git"
+  },
+  "author": "Kanrawee Karaboot",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tulakan/QandA-System-Gateway/issues"
+  },
+  "homepage": "https://github.com/tulakan/QandA-System-Gateway#readme"
+}
