@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/tulakan/QandA-System-Gateway/issues"
   },
-  "homepage": "https://github.com/tulakan/QandA-System-Gateway#readme"
+  "homepage": "https://github.com/tulakan/QandA-System-Gateway#readme",
+  "dependencies": {
+    "noble": "^1.8.1"
+  }
 }
