@@ -14,15 +14,41 @@ var options = {
 };
 var client = mqtt.connect('mqtt://m12.cloudmqtt.com', options)
 
+function stop() {
+    var stopData = {
+        "scanState": false,
+    }
+    var stopDataString = JSON.stringify(stopData);
+
+    client.publish('gateway-ble', stopDataString),
+    console.log("send top")
+    client.end()
+}
+
 client.on('connect', function () {
     // client.subscribe('presence')
     // console.log("subscribed")
-    client.publish('presence', 'scan')
-    client.end()
+    var startData = {
+        "scanState": true,
+        "deviceUUID": [
+            'e9:85:a4:34:d0:2a',
+            'e3:85:a4:34:d0:23'
+        ]
+    }
+
+    
+
+    var startDataString = JSON.stringify(startData);
+    client.publish('gateway-ble', startDataString)
+    console.log("send start")
+    setTimeout(stop, 3000);
+    
 })
+
+
 
 client.on('message', function (topic, message) {
     // message is Buffer
     console.log("message :", message.toString())
-    
+
 })
