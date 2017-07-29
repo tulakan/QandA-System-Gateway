@@ -32,50 +32,32 @@ client.on('connect', function () {
 })
 
 var scanState = false;
+var UUIDList = [];
 
 client.on('message', function (topic, message) {
     // message is Buffer
-    var data = JSON.parse(message);
+    var scandata = JSON.parse(message);
     // console.log("message :", message.toString());
     // var massageObject = message;
-    console.log(data)
-    scanState = data.scanState;
+    scanState = scandata.scanState;
+    console.log('UUIDList.length --> ', UUIDList.length);
+    if (scanState) {
+        UUIDList = scandata.deviceUUID;  
 
-    
-    // if (message.toString() == 'scan') {
-        
-    // }
-    //   client.end()
+        //todo test scan device in uuidList
+        noble.on('discover', function (peripheral) {
+            UUIDList.forEach((deviceUUID) => {
+                if (peripheral.address == deviceUUID) {
+                    var Mojor = peripheral.advertisement.manufacturerData.slice(20, 22);
+                    console.log('deviceUUID : ', deviceUUID, ' Answer is : ' + toHexString(Mojor));
+                }
+            })
+        });
+        //todo test scan device in uuidList
+    } else {
+        console.log('not scan');
+    }
 })
-
-noble.on('discover', function (peripheral) {
-    console.log("on discover");
-    if(scanState){
-        console.log("getting data !");
-    }else{
-        console.log("stop");
-    }
-    if (peripheral.address == 'e9:85:a4:34:d0:2a') {
-        // console.log("correct");
-        // console.log("TIME: " + new Date().getTime());
-        // console.log('on -> Name: ' + peripheral.advertisement.localName);
-        // console.log('on -> Address: ' + peripheral.address);
-
-        // var UUID = peripheral.advertisement.manufacturerData.slice(4, 20);
-        // console.log('on -> UUID: ' + toHexString(UUID));
-
-        var Mojor = peripheral.advertisement.manufacturerData.slice(20, 22);
-        // console.log('on -> Major: ' + toHexString(Mojor));
-        console.log('Answer is : ' + toHexString(Mojor));
-
-        // Minor = peripheral.advertisement.manufacturerData.slice(22, 24);
-        // console.log('on -> Minor: ' + toHexString(Minor));
-        // console.log('=======================================');
-    }
-});
-
-
-
 
 
 
