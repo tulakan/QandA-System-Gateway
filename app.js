@@ -156,6 +156,8 @@ client.on('message', function (topic, data) {
                 //     statusCode: 200,
                 //     message: 'publish success'
                 // })
+                //clear answer data to next quiz
+                answerData = []
                 console.log('publish answer success');
             }
         });
