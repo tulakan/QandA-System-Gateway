@@ -47,8 +47,10 @@ noble.on('discover', function (peripheral) {  // return BLE Device ที่อ�
         // var UUID = peripheral.advertisement.manufacturerData.slice(4, 20);
         // console.log('on -> UUID: ' + toHexString(UUID));
 
-        var Mojor = peripheral.advertisement.manufacturerData.slice(20, 22);
-        console.log('on -> Major: ' + toHexString(Mojor));
+        // var Mojor = peripheral.advertisement.manufacturerData.slice(20, 22);
+        var Mojor = peripheral.advertisement.manufacturerData[21]
+        console.log('on -> Major: ' + Mojor);
+        // console.log('manufacturerData --> ',peripheral.advertisement.manufacturerData);
 
         // Minor = peripheral.advertisement.manufacturerData.slice(22, 24);
         // console.log('on -> Minor: ' + toHexString(Minor));

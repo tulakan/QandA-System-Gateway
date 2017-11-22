@@ -37,33 +37,56 @@ noble.on('stateChange', function (state) {
     }
 });
 
+var scanState = false;
+var macAddressList;
+var answerData = []
+
 client.on('connect', function () {
     client.subscribe('gateway-ble/' + classIdx + '/' + roomIdx)
-    console.log('subscribed in topic : gateway-ble/' + classIdx + '/' + roomIdx)
+    // console.log('subscribed in topic : gateway-ble/' + classIdx + '/' + roomIdx)
 })
 
 noble.on('discover', function (peripheral) {
-    console.log('on discover');
+    // console.log('on discover');
     var address = peripheral.address;
-    var Mojor = peripheral.advertisement.manufacturerData.slice(20, 21);
+    // console.log('manufacturerData --> ',peripheral.advertisement.manufacturerData);
+    var answer = peripheral.advertisement.manufacturerData[21];
     // var Mojor = MojorBuffer[MojorBuffer.le-1]
 
-    if (peripheral.address == 'e9:85:a4:34:d0:2a') {
-        console.log('----------------------------------------------------------------------------------');
-        console.log('address : ', address, ' Answer is : ' + toHexString(Mojor));
-        console.log('Mojor -- >', peripheral.major);
-        console.log('----------------------------------------------------------------------------------');
-    } else {
-        console.log('address : ', address, ' Answer is : ' + toHexString(Mojor));
+    // 
+    macAddressList = ['e9:85:a4:34:d0:2a', 'f2:c5:da:51:a5:e8'];
+    if (macAddressList.indexOf(address) > -1) {
+        console.log('address : ', address, ' Answer is : ' + answer);
+        // console.log('---------------- Found Interested Device ----------------', address);
+        if (answer != '0') {
+            console.log('call update');
+            updateAnswerList(answerData, {
+                macAddress: address,
+                answer: answer,
+                timeStamp: Date.now()
+            })
+        }
+
+
     }
+
+
+
+    // if (address == 'e9:85:a4:34:d0:2a' || address == 'f2:c5:da:51:a5:e8') {
+    //     console.log('----------------------------------------------------------------------------------');
+    //     console.log('address : ', address, ' Answer is : ' + answer);
+    //     console.log('----------------------------------------------------------------------------------');
+    // } else {
+    //     console.log('address : ', address, ' Answer is : ' + answer);
+
+    // }
 });
 
-var scanState = false;
-var UUIDList;
+
 
 client.on('message', function (topic, data) {
 
-    console.log('typeof data ----> ', typeof data);
+    // console.log('typeof data ----> ', typeof data);
     if (typeof data === 'string') {
         var parseedData = data
     } else {
@@ -74,11 +97,11 @@ client.on('message', function (topic, data) {
 
     //if check state
     if (parseedData == 'checkBLEScanState') {
-        console.log('on GW check state');
+        // console.log('on GW check state');
         var sendStateTopic = 'gateway-ble/' + classIdx + '/' + roomIdx + '/checkBLEScanState'
-        console.log('sendStateTopic --> ', sendStateTopic);
+        // console.log('sendStateTopic --> ', sendStateTopic);
         var bleState = noble.state;
-        console.log('bleState --> ', bleState);
+        // console.log('bleState --> ', bleState);
         if (bleState == 'poweredOn') {
             client.publish(sendStateTopic, 'ready');
         } else {
@@ -87,14 +110,14 @@ client.on('message', function (topic, data) {
     }
 
     if (parseedData.message != undefined && parseedData.message == 'sendingMacAdressDATA') {
-        console.log('on sendingMacAdressDATA');
-        UUIDList = parseedData.macAddressList
-        console.log('UUIDList --> ', UUIDList);
+        // console.log('on sendingMacAdressDATA');
+        macAddressList = parseedData.macAddressList
+        // console.log('UUIDList --> ', UUIDList);
     }
 
 
     if (parseedData.message != undefined && parseedData.message == 'startScan') {
-        console.log('on startScan');
+        console.log('----------------- on startScan -----------------');
         var bleState = noble.state;
         if (bleState == 'poweredOn') {
             noble.startScanning([], true);
@@ -104,13 +127,44 @@ client.on('message', function (topic, data) {
     }
 
     if (parseedData.message != undefined && parseedData.message == 'stopScan') {
-        console.log('on stopScan');
+        console.log('================= on stopScan ==================');
         var bleState = noble.state;
         if (bleState == 'poweredOn') {
             noble.stopScanning();
         } else {
             noble.stopScanning();
         }
+    }
+
+    if (parseedData.message != undefined && parseedData.message == 'getAnswerData') {
+        console.log('================= on getAnswerData ==================');
+        var sendAnswerTopic = 'gateway-ble/' + classIdx + '/' + roomIdx + '/answerData'
+
+        console.log('answerData --> ', answerData);
+        var buffer = JSON.stringify(answerData)
+        client.publish(sendAnswerTopic, buffer, {}, function (error, granted) {
+            console.log("sent --> ", buffer)
+            if (error != undefined) {
+
+                // reply({
+                //     statusCode: 503,
+                //     message: 'publish Error'
+                // })
+                console.log('error answer --> ', error);
+            } else {
+                // reply({
+                //     statusCode: 200,
+                //     message: 'publish success'
+                // })
+                console.log('publish answer success');
+            }
+        });
+
+        //TODO : send data macAddressList
+        // macAddressList = ['e9:85:a4:34:d0:2a','f2:c5:da:51:a5:e8'];
+
+
+
     }
 
 
@@ -157,6 +211,31 @@ client.on('message', function (topic, data) {
     //     console.log('not scan');
     // }
 })
+
+//update last answer
+updateAnswerList = function (arr, newElement) {
+    console.log('on update value');
+    var found = false;
+    for (var i = 0; element = arr[i]; i++) {
+        if (element.macAddress == newElement.macAddress) {
+            found = true;
+            if (newElement.answer === 0) {
+                // arr[i] = false;
+            } else {
+                arr[i] = newElement;
+            }
+        }
+    }
+    if (found === false) {
+        arr.push(newElement);
+    }
+    // removing elements
+    var newArr = [];
+    for (var i = 0; element = arr[i]; i++) {
+        if (element !== false) newArr.push(element);
+    }
+    return newArr;
+}
 
 
 
